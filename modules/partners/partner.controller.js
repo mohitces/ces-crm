@@ -6,6 +6,11 @@ const getPartners = asyncHandler(async (req, res) => {
   res.json(partners);
 });
 
+const getPublicPartners = asyncHandler(async (req, res) => {
+  const partners = await partnerService.getPublicPartners();
+  res.json(partners);
+});
+
 const getPartnerById = asyncHandler(async (req, res) => {
   const partner = await partnerService.getPartnerById(req.params.id);
   res.json(partner);
@@ -46,6 +51,7 @@ const deletePartner = asyncHandler(async (req, res) => {
 
 module.exports = {
   getPartners,
+  getPublicPartners,
   getPartnerById,
   createPartner,
   uploadLogo,

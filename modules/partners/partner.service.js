@@ -39,6 +39,24 @@ const normalizeString = (value) => (typeof value === 'string' ? value.trim() : v
 
 const getPartners = async () => partnerRepository.getPartners();
 
+const toPublicDto = (partner) => ({
+  id: partner._id,
+  name: partner.name,
+  slug: partner.slug,
+  type: partner.type,
+  logo: partner.logo,
+  bannerImage: partner.bannerImage,
+  website: partner.website || '',
+  description: partner.description || '',
+  sortOrder: typeof partner.sortOrder === 'number' ? partner.sortOrder : 0,
+  createdAt: partner.createdAt,
+});
+
+const getPublicPartners = async () => {
+  const partners = await partnerRepository.getPublicPartners();
+  return partners.map((partner) => toPublicDto(partner));
+};
+
 const getPartnerById = async (id) => {
   const partner = await partnerRepository.getPartnerById(id);
   if (!partner) {
@@ -122,6 +140,7 @@ const deletePartner = async (id) => {
 
 module.exports = {
   getPartners,
+  getPublicPartners,
   getPartnerById,
   createPartner,
   updatePartner,

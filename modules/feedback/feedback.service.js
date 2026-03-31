@@ -5,6 +5,30 @@ const feedbackRepository = require('./feedback.repository');
 
 const getFeedback = async () => feedbackRepository.getFeedback();
 
+const toPublicDto = (feedback) => ({
+  id: feedback._id,
+  testimonialText: feedback.testimonialText || '',
+  type: feedback.type,
+  location: feedback.location,
+  industry: feedback.industry,
+  clientName: feedback.clientName,
+  designation: feedback.designation,
+  companyName: feedback.companyName,
+  profileImage: feedback.profileImage,
+  videoUrl: feedback.videoUrl || '',
+  thumbnail: feedback.thumbnail || '',
+  featured: !!feedback.featured,
+  sortOrder: typeof feedback.sortOrder === 'number' ? feedback.sortOrder : 0,
+  createdAt: feedback.createdAt,
+});
+
+const getPublicFeedback = async () => {
+  const feedbackList = await feedbackRepository.getPublicFeedback();
+  const featured = feedbackList.filter((item) => item.featured);
+  const source = featured.length ? featured : feedbackList;
+  return source.map((item) => toPublicDto(item));
+};
+
 const removeProfileImage = (imageUrl) => {
   if (!imageUrl) return;
   const marker = '/uploads/feedback/';
@@ -62,6 +86,7 @@ const deleteFeedback = async (id) => {
 
 module.exports = {
   getFeedback,
+  getPublicFeedback,
   getFeedbackById,
   createFeedback,
   updateFeedback,

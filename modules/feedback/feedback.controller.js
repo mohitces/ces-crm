@@ -6,6 +6,11 @@ const getFeedback = asyncHandler(async (req, res) => {
   res.json(feedback);
 });
 
+const getPublicFeedback = asyncHandler(async (req, res) => {
+  const feedback = await feedbackService.getPublicFeedback();
+  res.json(feedback);
+});
+
 const getFeedbackById = asyncHandler(async (req, res) => {
   const feedback = await feedbackService.getFeedbackById(req.params.id);
   res.json(feedback);
@@ -37,6 +42,7 @@ const deleteFeedback = asyncHandler(async (req, res) => {
 
 module.exports = {
   getFeedback,
+  getPublicFeedback,
   getFeedbackById,
   createFeedback,
   uploadProfileImage,

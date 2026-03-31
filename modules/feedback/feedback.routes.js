@@ -12,6 +12,7 @@ const {
 const router = express.Router();
 
 router.get('/', requireAuth, feedbackController.getFeedback);
+router.get('/public', feedbackController.getPublicFeedback);
 router.get(
   '/:id',
   requireAuth,

@@ -2,6 +2,9 @@ const Testimonial = require('./feedback.model');
 
 const getFeedback = async () => Testimonial.find().sort({ createdAt: -1 });
 
+const getPublicFeedback = async () =>
+  Testimonial.find({ isActive: true }).sort({ sortOrder: 1, createdAt: -1 });
+
 const getFeedbackById = async (id) => Testimonial.findById(id);
 
 const createFeedback = async (payload) => {
@@ -16,6 +19,7 @@ const deleteFeedback = async (id) => Testimonial.findByIdAndDelete(id);
 
 module.exports = {
   getFeedback,
+  getPublicFeedback,
   getFeedbackById,
   createFeedback,
   updateFeedback,

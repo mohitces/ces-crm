@@ -12,6 +12,7 @@ const {
 const router = express.Router();
 
 router.get('/', requireAuth, partnerController.getPartners);
+router.get('/public', partnerController.getPublicPartners);
 router.get(
   '/:id',
   requireAuth,

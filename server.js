@@ -10,6 +10,7 @@ const caseStudyRoutes = require('./modules/case-studies/case-study.routes');
 const queryRoutes = require('./modules/queries/query.routes');
 const feedbackRoutes = require('./modules/feedback/feedback.routes');
 const partnerRoutes = require('./modules/partners/partner.routes');
+const settingsRoutes = require('./modules/settings/settings.routes');
 const { ensureDefaultAdmin } = require('./modules/auth/auth.service');
 const notFound = require('./middlewares/notFound');
 const errorHandler = require('./middlewares/errorHandler');
@@ -45,6 +46,7 @@ app.use('/api/case-studies', caseStudyRoutes);
 app.use('/api/queries', queryRoutes);
 app.use('/api/feedback', feedbackRoutes);
 app.use('/api/partners', partnerRoutes);
+app.use('/api/settings', settingsRoutes);
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 app.use(notFound);
