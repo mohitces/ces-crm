@@ -39,6 +39,8 @@ const updateSettingsSchema = Joi.object({
   businessHours: businessHoursSchema.optional(),
   companyStats: Joi.array().items(statSchema).length(4).optional(),
   locations: Joi.array().items(locationSchema).optional(),
+  legalContent: Joi.string().trim().allow('').optional(),
+  privacyContent: Joi.string().trim().allow('').optional(),
 }).min(1);
 
 module.exports = {

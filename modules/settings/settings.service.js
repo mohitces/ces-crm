@@ -34,6 +34,8 @@ const DEFAULT_SETTINGS = {
       address: '10th-11th Floor, Paras Trinity, Golf Course Ext Rd, Sector 63, Gurugram, Haryana 122011',
     },
   ],
+  legalContent: 'Legal\n\nPlease add your legal terms and conditions here.',
+  privacyContent: 'Privacy Policy\n\nPlease add your privacy policy here.',
 };
 
 const normalizeLinks = (links) => {
@@ -85,6 +87,11 @@ const normalizeStats = (current, next) => {
   }));
 };
 
+const normalizeContent = (current, next) => {
+  if (typeof next === 'string') return next.trim();
+  return typeof current === 'string' ? current : '';
+};
+
 const toDto = (settings) => ({
   socialLinks: settings.socialLinks || [],
   technicalSupport: settings.technicalSupport || { email: '', phone: '' },
@@ -92,6 +99,8 @@ const toDto = (settings) => ({
   businessHours: settings.businessHours || { timezone: 'IST', monFri: '', saturday: '', sunday: '' },
   companyStats: settings.companyStats || [],
   locations: settings.locations || [],
+  legalContent: settings.legalContent || '',
+  privacyContent: settings.privacyContent || '',
 });
 
 const getSettings = async () => {
@@ -114,6 +123,8 @@ const updateSettings = async (payload) => {
     businessHours: normalizeHours(base.businessHours, payload.businessHours),
     companyStats: normalizeStats(base.companyStats, payload.companyStats),
     locations: normalizeLocations(base.locations, payload.locations),
+    legalContent: normalizeContent(base.legalContent, payload.legalContent),
+    privacyContent: normalizeContent(base.privacyContent, payload.privacyContent),
   };
 
   const saved = await settingsRepository.upsertSettings(update);

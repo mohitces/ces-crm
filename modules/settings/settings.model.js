@@ -52,6 +52,8 @@ const settingsSchema = new Schema(
         address: { type: String, default: '' },
       },
     ],
+    legalContent: { type: String, default: '' },
+    privacyContent: { type: String, default: '' },
   },
   { timestamps: true }
 );
