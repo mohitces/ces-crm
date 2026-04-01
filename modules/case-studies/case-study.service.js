@@ -2,7 +2,7 @@ const fs = require('fs');
 const path = require('path');
 const caseStudyRepository = require('./case-study.repository');
 const AppError = require('../../utils/AppError');
-const { destroyByUrl, isCloudinaryUrl } = require('../../utils/cloudinary');
+const { destroyByPublicId, destroyByUrl, isCloudinaryUrl } = require('../../utils/cloudinary');
 
 const toSlug = (value) =>
   value
@@ -25,10 +25,13 @@ const uniqueSlug = async (base, excludeId) => {
   }
 };
 
-const buildAssetUrl = (file) => {
-  if (!file) return '';
-  if (typeof file === 'string') return file;
-  return file.secure_url || file.url || '';
+const buildAssetInfo = (file) => {
+  if (!file) return { url: '', publicId: '' };
+  if (typeof file === 'string') return { url: file, publicId: '' };
+  return {
+    url: file.secure_url || file.url || '',
+    publicId: file.public_id || file.publicId || '',
+  };
 };
 
 const parseJson = (value) => {
@@ -63,8 +66,12 @@ const parseLines = (value) => {
   return [];
 };
 
-const removeAsset = async (assetUrl) => {
+const removeAsset = async (assetUrl, publicId) => {
   if (!assetUrl) return;
+  if (publicId) {
+    await destroyByPublicId(publicId);
+    return;
+  }
   if (isCloudinaryUrl(assetUrl)) {
     await destroyByUrl(assetUrl);
     return;
@@ -107,17 +114,23 @@ const buildPayload = async (payload, files, existing) => {
   const bannerFile = files?.find((file) => file.fieldname === 'bannerImage') || null;
   const mediaFiles = files?.filter((file) => file.fieldname === 'mediaImages') || [];
 
-  const logoUrl = logoFile ? buildAssetUrl(logoFile) : payload.clientLogoUrl || existing?.clientLogo || '';
-  const bannerUrl = bannerFile ? buildAssetUrl(bannerFile) : payload.bannerImageUrl || existing?.bannerImage || '';
+  const logoInfo = logoFile ? buildAssetInfo(logoFile) : { url: payload.clientLogoUrl || existing?.clientLogo || '', publicId: payload.clientLogoPublicId || existing?.clientLogoPublicId || '' };
+  const bannerInfo = bannerFile ? buildAssetInfo(bannerFile) : { url: payload.bannerImageUrl || existing?.bannerImage || '', publicId: payload.bannerImagePublicId || existing?.bannerImagePublicId || '' };
 
-  const mediaImages = [...mediaUrls, ...mediaFiles.map((file) => buildAssetUrl(file))];
+  const mediaInfos = mediaFiles.map((file) => buildAssetInfo(file));
+  const mediaImages = [...mediaUrls, ...mediaInfos.map((file) => file.url)];
+  const existingPublicIds =
+    payload.mediaPublicIds !== undefined
+      ? parseLines(payload.mediaPublicIds)
+      : existing?.mediaPublicIds || [];
+  const mediaPublicIds = [...existingPublicIds, ...mediaInfos.map((file) => file.publicId).filter(Boolean)];
 
   if (existing && logoFile) {
-    await removeAsset(existing.clientLogo);
+    await removeAsset(existing.clientLogo, existing.clientLogoPublicId);
   }
 
   if (existing && bannerFile) {
-    await removeAsset(existing.bannerImage);
+    await removeAsset(existing.bannerImage, existing.bannerImagePublicId);
   }
 
   return {
@@ -127,8 +140,10 @@ const buildPayload = async (payload, files, existing) => {
     featured: payload.featured === 'true' || payload.featured === true,
     title: payload.title?.trim() || existing?.title,
     subtitle: payload.subtitle?.trim() || '',
-    clientLogo: logoUrl,
-    bannerImage: bannerUrl,
+    clientLogo: logoInfo.url,
+    clientLogoPublicId: logoInfo.publicId,
+    bannerImage: bannerInfo.url,
+    bannerImagePublicId: bannerInfo.publicId,
     snapshot: {
       websiteUrl: snapshot.websiteUrl || '',
       country: snapshot.country || '',
@@ -154,6 +169,7 @@ const buildPayload = async (payload, files, existing) => {
     media: {
       images: mediaImages,
     },
+    mediaPublicIds,
   };
 };
 
@@ -174,10 +190,12 @@ const deleteCaseStudy = async (id) => {
   const existing = await caseStudyRepository.getCaseStudyById(id);
   if (!existing) throw new AppError('Case study not found', 404);
 
-  await removeAsset(existing.clientLogo);
-  await removeAsset(existing.bannerImage);
-  for (const image of existing.media?.images || []) {
-    await removeAsset(image);
+  await removeAsset(existing.clientLogo, existing.clientLogoPublicId);
+  await removeAsset(existing.bannerImage, existing.bannerImagePublicId);
+  const images = existing.media?.images || [];
+  const publicIds = existing.mediaPublicIds || [];
+  for (let index = 0; index < images.length; index += 1) {
+    await removeAsset(images[index], publicIds[index]);
   }
 
   await caseStudyRepository.deleteCaseStudy(id);

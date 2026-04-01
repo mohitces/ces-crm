@@ -13,6 +13,7 @@ const createUserSchema = Joi.object({
   role: Joi.string().trim().max(50).optional(),
   isActive: Joi.boolean().optional(),
   profileImage: Joi.string().trim().allow('').optional(),
+  profileImagePublicId: Joi.string().trim().allow('').optional(),
   sendWelcomeEmail: Joi.boolean().optional(),
 });
 
@@ -23,6 +24,7 @@ const updateUserSchema = Joi.object({
   role: Joi.string().trim().max(50).optional(),
   isActive: Joi.boolean().optional(),
   profileImage: Joi.string().trim().allow('').optional(),
+  profileImagePublicId: Joi.string().trim().allow('').optional(),
   sendWelcomeEmail: Joi.boolean().optional(),
 }).min(1);
 

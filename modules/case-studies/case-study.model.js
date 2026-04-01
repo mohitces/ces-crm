@@ -58,7 +58,9 @@ const caseStudySchema = new mongoose.Schema(
     title: { type: String, required: true, trim: true },
     subtitle: { type: String, default: '' },
     bannerImage: { type: String, default: '' },
+    bannerImagePublicId: { type: String, default: '' },
     clientLogo: { type: String, default: '' },
+    clientLogoPublicId: { type: String, default: '' },
 
     snapshot: { type: snapshotSchema, default: () => ({}) },
     about: { type: aboutSchema, default: () => ({}) },
@@ -67,6 +69,7 @@ const caseStudySchema = new mongoose.Schema(
     highlights: { type: [String], default: [] },
     results: { type: resultsSchema, default: () => ({}) },
     media: { type: mediaSchema, default: () => ({}) },
+    mediaPublicIds: { type: [String], default: [] },
   },
   { timestamps: true }
 );

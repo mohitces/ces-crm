@@ -18,7 +18,9 @@ const createCaseStudySchema = Joi.object({
   title: Joi.string().trim().min(3).max(220).required(),
   subtitle: Joi.string().trim().allow('').optional(),
   clientLogoUrl: Joi.string().allow('').optional(),
+  clientLogoPublicId: Joi.string().allow('').optional(),
   bannerImageUrl: Joi.string().allow('').optional(),
+  bannerImagePublicId: Joi.string().allow('').optional(),
   snapshot: Joi.string().optional(),
   about: Joi.string().optional(),
   challenges: Joi.string().optional(),
@@ -26,6 +28,7 @@ const createCaseStudySchema = Joi.object({
   highlights: Joi.string().optional(),
   results: Joi.string().optional(),
   mediaUrls: Joi.string().optional(),
+  mediaPublicIds: Joi.string().optional(),
 });
 
 const updateCaseStudySchema = Joi.object({
@@ -36,7 +39,9 @@ const updateCaseStudySchema = Joi.object({
   title: Joi.string().trim().min(3).max(220).optional(),
   subtitle: Joi.string().trim().allow('').optional(),
   clientLogoUrl: Joi.string().allow('').optional(),
+  clientLogoPublicId: Joi.string().allow('').optional(),
   bannerImageUrl: Joi.string().allow('').optional(),
+  bannerImagePublicId: Joi.string().allow('').optional(),
   snapshot: Joi.string().optional(),
   about: Joi.string().optional(),
   challenges: Joi.string().optional(),
@@ -44,6 +49,7 @@ const updateCaseStudySchema = Joi.object({
   highlights: Joi.string().optional(),
   results: Joi.string().optional(),
   mediaUrls: Joi.string().optional(),
+  mediaPublicIds: Joi.string().optional(),
 }).min(1);
 
 module.exports = {

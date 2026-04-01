@@ -1,6 +1,7 @@
 const express = require('express');
 const validate = require('../../middlewares/validate');
 const requireAuth = require('../../middlewares/auth');
+const { requireRole } = require('../../middlewares/roles');
 const partnerController = require('./partner.controller');
 const upload = require('./partner.upload');
 const {
@@ -19,22 +20,31 @@ router.get(
   validate(partnerIdParamsSchema, 'params'),
   partnerController.getPartnerById
 );
-router.post('/', requireAuth, validate(createPartnerSchema), partnerController.createPartner);
+router.post(
+  '/',
+  requireAuth,
+  requireRole('admin', 'editor'),
+  validate(createPartnerSchema),
+  partnerController.createPartner
+);
 router.post(
   '/upload/logo',
   requireAuth,
+  requireRole('admin', 'editor'),
   upload.single('logo'),
   partnerController.uploadLogo
 );
 router.post(
   '/upload/banner',
   requireAuth,
+  requireRole('admin', 'editor'),
   upload.single('bannerImage'),
   partnerController.uploadBanner
 );
 router.put(
   '/:id',
   requireAuth,
+  requireRole('admin', 'editor'),
   validate(partnerIdParamsSchema, 'params'),
   validate(updatePartnerSchema),
   partnerController.updatePartner
@@ -42,6 +52,7 @@ router.put(
 router.delete(
   '/:id',
   requireAuth,
+  requireRole('admin', 'editor'),
   validate(partnerIdParamsSchema, 'params'),
   partnerController.deletePartner
 );

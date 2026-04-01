@@ -9,6 +9,7 @@ const userSchema = new mongoose.Schema(
     role: { type: String, default: 'user', trim: true },
     isActive: { type: Boolean, default: true },
     profileImage: { type: String, default: '' },
+    profileImagePublicId: { type: String, default: '' },
     lastLoginAt: { type: Date, default: null },
     lastLoginIp: { type: String, default: '' },
     lastLoginUserAgent: { type: String, default: '' },

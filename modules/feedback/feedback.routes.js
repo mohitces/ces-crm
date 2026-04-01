@@ -1,6 +1,7 @@
 const express = require('express');
 const validate = require('../../middlewares/validate');
 const requireAuth = require('../../middlewares/auth');
+const { requireRole } = require('../../middlewares/roles');
 const feedbackController = require('./feedback.controller');
 const upload = require('./feedback.upload');
 const {
@@ -19,11 +20,24 @@ router.get(
   validate(feedbackIdParamsSchema, 'params'),
   feedbackController.getFeedbackById
 );
-router.post('/', requireAuth, validate(createFeedbackSchema), feedbackController.createFeedback);
-router.post('/upload', requireAuth, upload.single('profileImage'), feedbackController.uploadProfileImage);
+router.post(
+  '/',
+  requireAuth,
+  requireRole('admin', 'editor'),
+  validate(createFeedbackSchema),
+  feedbackController.createFeedback
+);
+router.post(
+  '/upload',
+  requireAuth,
+  requireRole('admin', 'editor'),
+  upload.single('profileImage'),
+  feedbackController.uploadProfileImage
+);
 router.put(
   '/:id',
   requireAuth,
+  requireRole('admin', 'editor'),
   validate(feedbackIdParamsSchema, 'params'),
   validate(updateFeedbackSchema),
   feedbackController.updateFeedback
@@ -31,6 +45,7 @@ router.put(
 router.delete(
   '/:id',
   requireAuth,
+  requireRole('admin', 'editor'),
   validate(feedbackIdParamsSchema, 'params'),
   feedbackController.deleteFeedback
 );

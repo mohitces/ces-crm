@@ -1,6 +1,6 @@
 const asyncHandler = require('../../utils/asyncHandler');
 const blogService = require('./blog.service');
-const { uploadBuffer } = require('../../utils/cloudinary');
+const { uploadImageBuffer } = require('../../utils/cloudinary');
 
 const getBlogs = asyncHandler(async (req, res) => {
   const blogs = await blogService.getBlogs();
@@ -25,7 +25,7 @@ const getPublishedBlogBySlug = asyncHandler(async (req, res) => {
 const createBlog = asyncHandler(async (req, res) => {
   const coverImage = req.files?.find((file) => file.fieldname === 'coverImage') || null;
   const uploadedCover = coverImage
-    ? await uploadBuffer(coverImage.buffer, { folder: 'ces/blogs', resource_type: 'image' })
+    ? await uploadImageBuffer(coverImage.buffer, { folder: 'ces/blogs' })
     : null;
   const blog = await blogService.createBlog(req.body, uploadedCover, req.user);
   res.status(201).json(blog);
@@ -34,7 +34,7 @@ const createBlog = asyncHandler(async (req, res) => {
 const updateBlog = asyncHandler(async (req, res) => {
   const coverImage = req.files?.find((file) => file.fieldname === 'coverImage') || null;
   const uploadedCover = coverImage
-    ? await uploadBuffer(coverImage.buffer, { folder: 'ces/blogs', resource_type: 'image' })
+    ? await uploadImageBuffer(coverImage.buffer, { folder: 'ces/blogs' })
     : null;
   const blog = await blogService.updateBlog(req.params.id, req.body, uploadedCover);
   res.json(blog);

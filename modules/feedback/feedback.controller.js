@@ -1,6 +1,6 @@
 const asyncHandler = require('../../utils/asyncHandler');
 const feedbackService = require('./feedback.service');
-const { uploadBuffer } = require('../../utils/cloudinary');
+const { uploadImageBuffer } = require('../../utils/cloudinary');
 
 const getFeedback = asyncHandler(async (req, res) => {
   const feedback = await feedbackService.getFeedback();
@@ -28,11 +28,8 @@ const uploadProfileImage = asyncHandler(async (req, res) => {
     res.status(400).json({ message: 'Profile image is required.' });
     return;
   }
-  const upload = await uploadBuffer(file.buffer, {
-    folder: 'ces/feedback',
-    resource_type: 'image',
-  });
-  res.status(201).json({ url: upload.secure_url });
+  const upload = await uploadImageBuffer(file.buffer, { folder: 'ces/feedback' });
+  res.status(201).json({ url: upload.secure_url, publicId: upload.public_id });
 });
 
 const updateFeedback = asyncHandler(async (req, res) => {

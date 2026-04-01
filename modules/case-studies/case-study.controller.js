@@ -1,6 +1,6 @@
 const asyncHandler = require('../../utils/asyncHandler');
 const caseStudyService = require('./case-study.service');
-const { uploadBuffer } = require('../../utils/cloudinary');
+const { uploadImageBuffer } = require('../../utils/cloudinary');
 
 const getCaseStudies = asyncHandler(async (req, res) => {
   const items = await caseStudyService.getCaseStudies();
@@ -26,10 +26,7 @@ const createCaseStudy = asyncHandler(async (req, res) => {
   const files = req.files ? Object.values(req.files).flat() : [];
   const uploads = await Promise.all(
     files.map(async (file) => {
-      const upload = await uploadBuffer(file.buffer, {
-        folder: 'ces/case-studies',
-        resource_type: 'image',
-      });
+      const upload = await uploadImageBuffer(file.buffer, { folder: 'ces/case-studies' });
       return {
         fieldname: file.fieldname,
         url: upload.secure_url,
@@ -45,10 +42,7 @@ const updateCaseStudy = asyncHandler(async (req, res) => {
   const files = req.files ? Object.values(req.files).flat() : [];
   const uploads = await Promise.all(
     files.map(async (file) => {
-      const upload = await uploadBuffer(file.buffer, {
-        folder: 'ces/case-studies',
-        resource_type: 'image',
-      });
+      const upload = await uploadImageBuffer(file.buffer, { folder: 'ces/case-studies' });
       return {
         fieldname: file.fieldname,
         url: upload.secure_url,

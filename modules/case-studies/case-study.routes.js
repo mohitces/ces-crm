@@ -2,6 +2,7 @@ const express = require('express');
 const caseStudyController = require('./case-study.controller');
 const validate = require('../../middlewares/validate');
 const requireAuth = require('../../middlewares/auth');
+const { requireRole } = require('../../middlewares/roles');
 const upload = require('./case-study.upload');
 const {
   caseStudyIdParamsSchema,
@@ -29,6 +30,7 @@ router.get(
 router.post(
   '/',
   requireAuth,
+  requireRole('admin', 'editor'),
   upload.fields([
     { name: 'clientLogo', maxCount: 1 },
     { name: 'bannerImage', maxCount: 1 },
@@ -40,6 +42,7 @@ router.post(
 router.put(
   '/:id',
   requireAuth,
+  requireRole('admin', 'editor'),
   upload.fields([
     { name: 'clientLogo', maxCount: 1 },
     { name: 'bannerImage', maxCount: 1 },
@@ -52,6 +55,7 @@ router.put(
 router.delete(
   '/:id',
   requireAuth,
+  requireRole('admin', 'editor'),
   validate(caseStudyIdParamsSchema, 'params'),
   caseStudyController.deleteCaseStudy,
 );

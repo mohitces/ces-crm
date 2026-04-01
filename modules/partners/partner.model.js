@@ -26,7 +26,15 @@ const partnerSchema = new Schema(
       type: String,
       required: true,
     },
+    logoPublicId: {
+      type: String,
+      default: '',
+    },
     bannerImage: {
+      type: String,
+      default: '',
+    },
+    bannerImagePublicId: {
       type: String,
       default: '',
     },

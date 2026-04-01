@@ -70,6 +70,10 @@ const testimonialSchema = new Schema(
       type: String,
       required: true,
     },
+    profileImagePublicId: {
+      type: String,
+      default: '',
+    },
     videoUrl: {
       type: String,
       required: function () {
@@ -78,6 +82,10 @@ const testimonialSchema = new Schema(
     },
     thumbnail: {
       type: String,
+    },
+    thumbnailPublicId: {
+      type: String,
+      default: '',
     },
     isActive: {
       type: Boolean,

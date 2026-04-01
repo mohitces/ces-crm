@@ -39,6 +39,13 @@ const uploadBuffer = (buffer, options = {}) => {
   );
 };
 
+const uploadImageBuffer = (buffer, options = {}) =>
+  uploadBuffer(buffer, {
+    resource_type: 'image',
+    transformation: [{ quality: 'auto', fetch_format: 'auto' }],
+    ...options,
+  });
+
 const isCloudinaryUrl = (url) =>
   typeof url === 'string' && url.includes('res.cloudinary.com/');
 
@@ -62,6 +69,13 @@ const extractPublicIdFromUrl = (url) => {
   return publicIdParts.join('/');
 };
 
+const destroyByPublicId = async (publicId, options = {}) => {
+  if (!publicId) return false;
+  ensureConfigured();
+  await cloudinary.uploader.destroy(publicId, { resource_type: 'image', ...options });
+  return true;
+};
+
 const destroyByUrl = async (url, options = {}) => {
   if (!isCloudinaryUrl(url)) return false;
   const publicId = extractPublicIdFromUrl(url);
@@ -75,7 +89,9 @@ module.exports = {
   cloudinary,
   ensureConfigured,
   uploadBuffer,
+  uploadImageBuffer,
   isCloudinaryUrl,
   extractPublicIdFromUrl,
+  destroyByPublicId,
   destroyByUrl,
 };

@@ -2,6 +2,7 @@ const express = require('express');
 const blogController = require('./blog.controller');
 const validate = require('../../middlewares/validate');
 const requireAuth = require('../../middlewares/auth');
+const { requireRole } = require('../../middlewares/roles');
 const upload = require('./blog.upload');
 const {
   blogIdParamsSchema,
@@ -17,15 +18,29 @@ router.get('/public/:slug', validate(blogSlugParamsSchema, 'params'), blogContro
 
 router.get('/', requireAuth, blogController.getBlogs);
 router.get('/:id', requireAuth, validate(blogIdParamsSchema, 'params'), blogController.getBlogById);
-router.post('/', requireAuth, upload.any(), validate(createBlogSchema), blogController.createBlog);
+router.post(
+  '/',
+  requireAuth,
+  requireRole('admin', 'editor'),
+  upload.any(),
+  validate(createBlogSchema),
+  blogController.createBlog
+);
 router.put(
   '/:id',
   requireAuth,
+  requireRole('admin', 'editor'),
   upload.any(),
   validate(blogIdParamsSchema, 'params'),
   validate(updateBlogSchema),
   blogController.updateBlog,
 );
-router.delete('/:id', requireAuth, validate(blogIdParamsSchema, 'params'), blogController.deleteBlog);
+router.delete(
+  '/:id',
+  requireAuth,
+  requireRole('admin', 'editor'),
+  validate(blogIdParamsSchema, 'params'),
+  blogController.deleteBlog
+);
 
 module.exports = router;

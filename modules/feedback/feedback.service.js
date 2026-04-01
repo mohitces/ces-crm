@@ -2,7 +2,7 @@ const fs = require('fs');
 const path = require('path');
 const AppError = require('../../utils/AppError');
 const feedbackRepository = require('./feedback.repository');
-const { destroyByUrl, isCloudinaryUrl } = require('../../utils/cloudinary');
+const { destroyByPublicId, destroyByUrl, isCloudinaryUrl } = require('../../utils/cloudinary');
 
 const getFeedback = async () => feedbackRepository.getFeedback();
 
@@ -30,8 +30,12 @@ const getPublicFeedback = async () => {
   return source.map((item) => toPublicDto(item));
 };
 
-const removeProfileImage = async (imageUrl) => {
+const removeProfileImage = async (imageUrl, publicId) => {
   if (!imageUrl) return;
+  if (publicId) {
+    await destroyByPublicId(publicId);
+    return;
+  }
   if (isCloudinaryUrl(imageUrl)) {
     await destroyByUrl(imageUrl);
     return;
@@ -65,9 +69,19 @@ const updateFeedback = async (id, payload) => {
   if (typeof payload.profileImage === 'string') {
     const nextImage = payload.profileImage.trim();
     if (nextImage !== existing.profileImage) {
-      await removeProfileImage(existing.profileImage);
+      await removeProfileImage(existing.profileImage, existing.profileImagePublicId);
+      payload.profileImagePublicId = payload.profileImagePublicId || '';
     }
     payload.profileImage = nextImage;
+  }
+
+  if (typeof payload.thumbnail === 'string') {
+    const nextThumb = payload.thumbnail.trim();
+    if (nextThumb !== existing.thumbnail) {
+      await removeProfileImage(existing.thumbnail, existing.thumbnailPublicId);
+      payload.thumbnailPublicId = payload.thumbnailPublicId || '';
+    }
+    payload.thumbnail = nextThumb;
   }
 
   const updated = await feedbackRepository.updateFeedback(id, payload);
@@ -82,7 +96,8 @@ const deleteFeedback = async (id) => {
   if (!existing) {
     throw new AppError('Feedback not found', 404);
   }
-  await removeProfileImage(existing.profileImage);
+  await removeProfileImage(existing.profileImage, existing.profileImagePublicId);
+  await removeProfileImage(existing.thumbnail, existing.thumbnailPublicId);
   const deleted = await feedbackRepository.deleteFeedback(id);
   if (!deleted) {
     throw new AppError('Feedback not found', 404);

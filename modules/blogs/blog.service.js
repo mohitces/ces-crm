@@ -2,7 +2,7 @@ const fs = require('fs');
 const path = require('path');
 const blogRepository = require('./blog.repository');
 const AppError = require('../../utils/AppError');
-const { destroyByUrl, isCloudinaryUrl } = require('../../utils/cloudinary');
+const { destroyByPublicId, destroyByUrl, isCloudinaryUrl } = require('../../utils/cloudinary');
 
 const toSlug = (value) =>
   value
@@ -25,10 +25,13 @@ const uniqueSlug = async (base, excludeId) => {
   }
 };
 
-const buildCoverUrl = (file) => {
-  if (!file) return '';
-  if (typeof file === 'string') return file;
-  return file.secure_url || file.url || '';
+const buildCoverInfo = (file) => {
+  if (!file) return { url: '', publicId: '' };
+  if (typeof file === 'string') return { url: file, publicId: '' };
+  return {
+    url: file.secure_url || file.url || '',
+    publicId: file.public_id || '',
+  };
 };
 
 const parseList = (value) => {
@@ -57,8 +60,12 @@ const parseList = (value) => {
   return [];
 };
 
-const removeCover = async (coverUrl) => {
+const removeCover = async (coverUrl, coverPublicId) => {
   if (!coverUrl) return;
+  if (coverPublicId) {
+    await destroyByPublicId(coverPublicId);
+    return;
+  }
   if (isCloudinaryUrl(coverUrl)) {
     await destroyByUrl(coverUrl);
     return;
@@ -92,12 +99,14 @@ const createBlog = async (payload, file, user) => {
   const slugBase = toSlug(payload.slug || payload.title);
   const slug = await uniqueSlug(slugBase);
 
+  const coverInfo = buildCoverInfo(file);
   const blog = await blogRepository.createBlog({
     title: payload.title.trim(),
     slug,
     excerpt: payload.excerpt?.trim() || '',
     content: payload.content,
-    coverImageUrl: buildCoverUrl(file),
+    coverImageUrl: coverInfo.url,
+    coverImagePublicId: coverInfo.publicId,
     metaTitle: payload.metaTitle?.trim() || '',
     metaDescription: payload.metaDescription?.trim() || '',
     tags: parseList(payload.tags),
@@ -141,8 +150,9 @@ const updateBlog = async (id, payload, file) => {
   }
 
   if (payload.clearCover === 'true' || payload.clearCover === true) {
-    await removeCover(existing.coverImageUrl);
+    await removeCover(existing.coverImageUrl, existing.coverImagePublicId);
     update.coverImageUrl = '';
+    update.coverImagePublicId = '';
   }
 
   if (payload.title || payload.slug) {
@@ -151,8 +161,10 @@ const updateBlog = async (id, payload, file) => {
   }
 
   if (file) {
-    await removeCover(existing.coverImageUrl);
-    update.coverImageUrl = buildCoverUrl(file);
+    await removeCover(existing.coverImageUrl, existing.coverImagePublicId);
+    const coverInfo = buildCoverInfo(file);
+    update.coverImageUrl = coverInfo.url;
+    update.coverImagePublicId = coverInfo.publicId;
   }
 
   if (payload.status === 'published' && !existing.publishedAt) {
@@ -173,7 +185,7 @@ const deleteBlog = async (id) => {
     throw new AppError('Blog not found', 404);
   }
 
-  await removeCover(existing.coverImageUrl);
+  await removeCover(existing.coverImageUrl, existing.coverImagePublicId);
   await blogRepository.deleteBlog(id);
 };
 

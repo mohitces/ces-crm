@@ -3,12 +3,20 @@ const path = require('path');
 const userRepository = require('./user.repository');
 const AppError = require('../../utils/AppError');
 const bcrypt = require('bcryptjs');
-const { destroyByUrl, isCloudinaryUrl } = require('../../utils/cloudinary');
+const { destroyByPublicId, destroyByUrl, isCloudinaryUrl } = require('../../utils/cloudinary');
 
 const DEFAULT_USER_PASSWORD = process.env.DEFAULT_USER_PASSWORD || 'Pa$$w0rd';
 const DEFAULT_ADMIN_EMAIL = process.env.DEFAULT_ADMIN_EMAIL || 'admin@ces-pl.com';
 
 const normalizeEmail = (email) => email.toLowerCase().trim();
+const normalizeRole = (role) => {
+  const value = String(role || '').trim().toLowerCase();
+  if (!value) return 'viewer';
+  if (value === 'super admin' || value === 'superadmin') return 'admin';
+  if (value === 'support manager') return 'editor';
+  if (['admin', 'editor', 'viewer'].includes(value)) return value;
+  return value;
+};
 
 const buildUserResponse = (user) => ({
   id: user._id,
@@ -18,6 +26,7 @@ const buildUserResponse = (user) => ({
   role: user.role,
   isActive: user.isActive,
   profileImage: user.profileImage || '',
+  profileImagePublicId: user.profileImagePublicId || '',
   lastLoginAt: user.lastLoginAt,
   lastLoginIp: user.lastLoginIp,
   mfaEnabled: user.mfaEnabled || false,
@@ -66,9 +75,10 @@ const createUser = async (payload) => {
     email: normalizedEmail,
     mobile: payload.mobile?.trim() || '',
     password: hashedPassword,
-    role: payload.role?.trim() || 'user',
+    role: normalizeRole(payload.role) || 'viewer',
     isActive: payload.isActive ?? true,
     profileImage: payload.profileImage?.trim() || '',
+    profileImagePublicId: payload.profileImagePublicId || '',
   });
 
   return {
@@ -105,13 +115,14 @@ const updateUser = async (id, payload) => {
   }
 
   if (typeof payload.role === 'string') {
-    payload.role = payload.role.trim();
+    payload.role = normalizeRole(payload.role);
   }
 
   if (typeof payload.profileImage === 'string') {
     payload.profileImage = payload.profileImage.trim();
     if (payload.profileImage !== existing.profileImage) {
-      await removeProfileImage(existing.profileImage);
+      await removeProfileImage(existing.profileImage, existing.profileImagePublicId);
+      payload.profileImagePublicId = payload.profileImagePublicId || '';
     }
   }
 
@@ -129,12 +140,16 @@ const deleteUser = async (id) => {
   if (!existing) {
     throw new AppError('User not found', 404);
   }
-  await removeProfileImage(existing.profileImage);
+  await removeProfileImage(existing.profileImage, existing.profileImagePublicId);
   await userRepository.deleteUser(id);
 };
 
-const removeProfileImage = async (imageUrl) => {
+const removeProfileImage = async (imageUrl, publicId) => {
   if (!imageUrl) return;
+  if (publicId) {
+    await destroyByPublicId(publicId);
+    return;
+  }
   if (isCloudinaryUrl(imageUrl)) {
     await destroyByUrl(imageUrl);
     return;
